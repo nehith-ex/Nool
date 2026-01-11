@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verified Nool | Authenticity Check</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- THEME --- */
+        :root {
+            --bg-beige: #F4F1EA;      
+            --dark-slate: #4A5053;    
+            --input-grey: #E8E8E8;    
+            --text-grey: #666666;
+            --border-line: #D1CDC5;
+            --success-green: #2E7D32;
+            --fail-red: #C62828;
+            --warn-orange: #EF6C00;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-beige);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--dark-slate);
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 600px;
+        }
+
+        /* LEFT PANEL - CSS LOGO RECREATION */
+        .left-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            border-right: 1px solid var(--dark-slate);
+            text-align: right;
+        }
+
+        .logo-wrapper { 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            color: var(--dark-slate);
+            line-height: 0.8;
+        }
+        
+        .logo-verified {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: -10px;
+            margin-right: 5px;
+            
+            color: #555;
+        }
+
+        .logo-nool {
+            font-family: 'Playfair Display', serif;
+            font-size: 110px;
+            font-weight: 700;
+            letter-spacing: -4px;
+            margin-right: -5px;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            flex: 1.2;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h2 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--dark-slate); margin-top: 0; margin-bottom: 30px; }
+
+        .input-group { display: flex; align-items: center; margin-bottom: 15px; }
+        label { width: 140px; font-family: 'Playfair Display', serif; font-size: 15px; color: var(--dark-slate); font-weight: 600; }
+        input, select { flex: 1; padding: 12px; border: none; background-color: var(--input-grey); border-radius: 0; font-family: 'Inter', sans-serif; font-size: 14px; color: #333; }
+        input:focus, select:focus { outline: 1px solid var(--dark-slate); }
+
+        .btn {
+            background-color: var(--dark-slate); color: white; padding: 12px 30px; border: none; border-radius: 20px; 
+            font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 20px; font-family: 'Inter', sans-serif; width: auto; min-width: 120px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn.secondary { background-color: #888; font-size: 13px; padding: 8px 20px; }
+        .btn-outline { background: transparent; border: 1px solid var(--dark-slate); color: var(--dark-slate); border-radius: 20px; padding: 12px 30px; cursor: pointer; font-weight: 600; margin-top: 20px;}
+
+        .nav { margin-bottom: 30px; border-bottom: 1px solid var(--border-line); padding-bottom: 10px; }
+        .nav span { margin-right: 20px; cursor: pointer; font-size: 14px; color: #999; font-weight: 600; padding-bottom: 10px; }
+        .nav span.active { color: var(--dark-slate); border-bottom: 2px solid var(--dark-slate); }
+
+        .ai-box { margin-top: 20px; border-top: 1px solid var(--border-line); padding-top: 20px; }
+        .status-box { margin-top: 15px; padding: 15px; background: white; border-radius: 4px; font-size: 13px; display: none; border-left: 4px solid #ccc; }
+        .qr-area { margin-top: 20px; display: none; flex-direction: column; align-items: flex-start; }
+        #qrcode img { border: 5px solid white; }
+
+        /* PRODUCT PASSPORT CARD */
+        .passport-card { background: white; border: 1px solid var(--dark-slate); padding: 25px; margin-top: 20px; display: none; animation: fadeIn 0.5s ease; }
+        .passport-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .passport-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+        .passport-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .passport-label { color: #888; font-weight: 500; }
+        .passport-value { font-weight: 600; color: #333; text-align: right; }
+        .ai-tag { display: inline-block; background: #e8f5e9; color: var(--success-green); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 10px; }
+
+        .screen { display: none; width: 100%; animation: fadeIn 0.4s ease; } 
+        .screen.active { display: block; }     
+        .page { display: none; } 
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="left-panel">
+        <div class="logo-wrapper" onclick="location.href=location.pathname">
+            <div class="logo-verified">verified</div>
+            <div class="logo-nool">nool</div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div id="screen-landing" class="screen active">
+            <h2 style="text-align: center;">Welcome</h2>
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button class="btn" onclick="switchScreen('screen-login')" style="width:200px">Login</button>
+                <button class="btn-outline" onclick="switchScreen('screen-signup')" style="width:200px">Sign up</button>
+            </div>
+        </div>
+
+        <div id="screen-login" class="screen">
+            <h2>Login</h2>
+            <div class="input-group"><label>Email id:</label><input type="text" id="loginUser" placeholder="Enter email id"></div>
+            <div class="input-group"><label>Password:</label><input type="password" id="loginPass" placeholder="Enter Password"></div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn" onclick="doLogin()">Login</button>
+                <button class="btn btn-outline" onclick="switchScreen('screen-signup')">Sign Up</button>
+            </div>
+        </div>
+
+        <div id="screen-signup" class="screen">
+            <h2>Sign-up</h2>
+            <div class="input-group"><label>Name:</label><input type="text" placeholder="Full Name"></div>
+            <div class="input-group"><label>Email:</label><input type="email" placeholder="Email"></div>
+            <div class="input-group"><label>Password:</label><input type="password" placeholder="Password"></div>
+            <button class="btn" onclick="doLogin()">Complete Sign-up</button>
+            <button class="btn-outline" onclick="switchScreen('screen-landing')">Back</button>
+        </div>
+
+        <div id="screen-dashboard" class="screen">
+            <div class="nav" id="mainNav">
+                <span class="active" onclick="switchTab('weaver', this)">Weaver</span>
+                <span onclick="switchTab('buyer', this)">Buyer</span>
+                <span onclick="switchTab('admin', this)">Admin</span>
+            </div>
+
+            <div id="weaver" class="page active">
+                <h2>Product Entry</h2>
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                    <div class="input-group"><label>Weaver ID:</label><input type="text" id="wName" readonly style="background:#ddd; color:#555;"></div>
+                    <div class="input-group"><label>Item Type:</label>
+                        <select id="wItem"><option>Kasavu Saree</option><option>Kanchipuram Silk</option><option>Cotton Mundu</option></select>
+                    </div>
+                    <div class="input-group"><label>Materials:</label><input type="text" id="wMat" placeholder="e.g. Pure Silk, Zari"></div>
+                    <div class="input-group"><label>Origin:</label><input type="text" id="wOrigin" value="Kerala, India"></div>
+                    
+                    <div class="ai-box">
+                        <label style="margin-bottom:10px; display:block;">AI Quality Check:</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="fabricPhoto" accept="image/*" style="background:white; border:1px solid #ccc;">
+                            <button class="btn secondary" onclick="analyzeFabric()">Check</button>
+                        </div>
+                        <div id="aiStatus" class="status-box"></div>
+                    </div>
+                </div>
+                <button class="btn" onclick="generate()">Generate ID</button>
+                <div id="qrResult" class="qr-area"><div id="qrcode"></div><div id="textId" style="font-size:12px; margin-top:5px; font-family:monospace; background:#e8e8e8; padding:5px;"></div></div>
+            </div>
+
+            <div id="buyer" class="page">
+                <h2 id="verifyTitle">Product Passport</h2>
+                <div id="manualSearch">
+                    <div class="input-group"><label>Product ID:</label><input type="text" id="scanId" placeholder="Enter ID..."></div>
+                    <button class="btn" onclick="verify()">Verify</button>
+                </div>
+                <div id="passportCard" class="passport-card"></div>
+                <div id="verifyResult" class="status-box"></div>
+            </div>
+
+            <div id="admin" class="page">
+                <h2>System Admin</h2>
+                <button class="btn" style="background-color:#d32f2f;" onclick="resetSys()">Reset Database</button>
+                <br><br>
+                <button class="btn secondary" onclick="location.href = location.pathname">Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ⚠️ UPDATE THIS LINK EVERY TIME YOU RESTART THE TUNNEL
+    const PUBLIC_URL = "https://2142e303dc8d7531-223-239-38-149.serveousercontent.com"; 
+    
+    const API = `${PUBLIC_URL}/api`; 
+    let currentAIResult = null;
+
+    function switchScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function switchTab(id, tabEl) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav span').forEach(s => s.classList.remove('active'));
+        if(tabEl) tabEl.classList.add('active');
+    }
+
+    function doLogin() {
+        const user = document.getElementById('loginUser').value || "New User";
+        switchScreen('screen-dashboard');
+        document.getElementById('wName').value = user;
+    }
+
+    // DIRECT REDIRECT ON QR SCAN
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const scannedId = urlParams.get('id');
+        
+        if (scannedId) {
+            switchScreen('screen-dashboard');
+            document.getElementById('mainNav').style.display = 'none'; 
+            document.getElementById('verifyTitle').innerText = "Product Passport";
+            document.getElementById('manualSearch').style.display = 'none';
+            switchTab('buyer', null);
+            document.getElementById('scanId').value = scannedId;
+            setTimeout(verify, 500); 
+        }
+    };
+
+    // ORIGINAL AI SCANNER
+    async function analyzeFabric() {
+        const file = document.getElementById('fabricPhoto').files[0];
+        if(!file) return alert("Upload photo first.");
+        const statusBox = document.getElementById('aiStatus');
+        statusBox.style.display = 'block'; statusBox.innerHTML = "Connecting...";
+        try {
+            const res = await fetch(`${API}/analyze`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true'}, body: JSON.stringify({ filename: file.name }) });
+            const data = await res.json();
+            if (data.success) {
+                statusBox.style.borderLeftColor = "#2E7D32";
+                statusBox.innerHTML = `<span style="color:#2E7D32; font-weight:bold;">✔ HANDLOOM VERIFIED (${data.score}%)</span><br>Evidence: ${data.pattern.name}`;
+                currentAIResult = data.pattern;
+            } else {
+                statusBox.style.borderLeftColor = "#C62828";
+                statusBox.innerHTML = `<span style="color:#C62828; font-weight:bold;">✖ FAILED: MACHINE MADE</span><br>Uniformity Detected`;
+                currentAIResult = null;
+            }
+        } catch(e) { statusBox.innerHTML = "Error"; }
+    }
+
+    async function generate() {
+        if (!currentAIResult) return alert("AI Check Required.");
+        try {
+            const res = await fetch(`${API}/products/create`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true'}, body: JSON.stringify({ weaver: document.getElementById('wName').value, item: document.getElementById('wItem').value, materials: document.getElementById('wMat').value, origin: document.getElementById('wOrigin').value, ai_data: currentAIResult }) });
+            const data = await res.json();
+            document.getElementById('qrResult').style.display = 'flex';
+            document.getElementById('qrcode').innerHTML = "";
+            const link = `${PUBLIC_URL}/?id=${data.product.qr_string}`;
+            new QRCode(document.getElementById("qrcode"), { text: link, width: 100, height: 100, colorDark: "#4A5053" });
+            document.getElementById('textId').innerText = data.product.qr_string;
+        } catch(e) { alert("Error"); }
+    }
+
+    async function verify() {
+        const id = document.getElementById('scanId').value;
+        const card = document.getElementById('passportCard');
+        const errBox = document.getElementById('verifyResult');
+        errBox.style.display = 'block'; errBox.innerHTML = "Verifying...";
+        try {
+            const res = await fetch(`${API}/verify/scan`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true'}, body: JSON.stringify({ qr_string: id, location: "Mobile Scan" }) });
+            const data = await res.json();
+            errBox.style.display = 'none';
+            if(data.status === 'success' || data.status === 'warning') {
+                const p = data.product_details;
+                const statusColor = data.status === 'success' ? '#2E7D32' : '#EF6C00';
+                card.innerHTML = `<div class="passport-header"><div class="passport-icon" style="color:${statusColor}">${data.status === 'success' ? '✔' : '⚠'}</div><div><div class="passport-title" style="color:${statusColor}">${data.status === 'success' ? 'Verified Authentic' : 'Already Scanned'}</div><div style="font-size:12px; color:#888;">ID: ${id}</div></div></div><div class="passport-row"><span>Product</span><b>${p.item}</b></div><div class="passport-row"><span>Artisan</span><b>${p.weaver}</b></div><div class="passport-row"><span>Material</span><b>${p.materials || '-'}</b></div><div class="passport-row"><span>Origin</span><b>${p.origin}</b></div><div style="margin-top:15px; text-align:right;">${p.ai_data ? `<div class="ai-tag">📸 AI Verified: ${p.ai_data.name}</div>` : ''}</div>`;
+                card.style.display = 'block';
+            } else { errBox.style.display = 'block'; errBox.innerHTML = "✖ Invalid ID"; }
+        } catch(e) { errBox.innerHTML = "Fail"; }
+    }
+
+    async function resetSys() { await fetch(`${API}/admin/reset`, {method:'POST'}); location.reload(); }
+</script>
+</body>
+</html>
